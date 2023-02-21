@@ -1,0 +1,17 @@
+#### Video segmentation - Kate Sorg
+# Breaking up the video into individual frames
+#
+# possible variables needed:
+# failedFrames = frames which could not be segmented or otherwise cannot be used
+# videoFile = name of video file to be segmented
+# something about another video file with the angles of the worm???
+#
+#
+# Workflow of inspiration code:
+# 1. test for downsampling
+# 2. test for excluding stage movement frames
+# 3. open the video and get information
+#
+# Left to do/areas of possible improvement:
+# - testing for downsampling
+# - still need to find a way to exclude useless frames (will be done at every stage of processing)
