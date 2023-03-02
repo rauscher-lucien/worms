@@ -16,7 +16,7 @@ def eigenworms(cov_mat, num_eig_worms, verbose=True):
     # Keep the numEigWorms dimensions that capture most of the variance
     eigen_worms = e_vecs[:, :num_eig_worms].T
     eigen_vals = e_vals[:num_eig_worms]
-    print(eigen_worms)
+    # print(eigen_worms)
     if verbose:
         # Plot eigenvalues to show fraction of variance explained
 
