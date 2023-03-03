@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 from skimage import morphology
@@ -21,9 +22,12 @@ def find_head(video_number, image_number, path):
     # thresholding, closing and skeleton
     thresh = 90
     binary = image <= thresh
-    binary_no_holes_closed = morphology.binary_closing(binary, morphology.disk(6))
-    skel = np.array(morphology.skeletonize(binary_no_holes_closed))
+    binary = morphology.binary_closing(binary, morphology.disk(10))
+    binary = morphology.remove_small_objects(binary, min_size=100, connectivity=8, out=None)
+    skel = np.array(morphology.skeletonize(binary))
     skel = skel.astype(int)
+    plt.imshow(skel)
+    plt.show()
 
     # get coordinates of skeleton
     ind1 = np.where(skel != [0])

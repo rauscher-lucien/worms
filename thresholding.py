@@ -21,15 +21,13 @@ def thresholding(video_number, path):
         img = Image.open(os.path.join(pic_path, 'raw_worms_'+str(i)+'.jpg')).convert("L")
         image = np.array(img)
 
+        # thresholding, closing and removing small objects
         thresh = 90
         binary = image <= thresh
+        binary = morphology.binary_closing(binary, morphology.disk(10))
+        binary = morphology.remove_small_objects(binary, min_size=100, connectivity=8, out=None)
 
-        # Fills the holes in binary objects
-        binary_no_holes = binary_fill_holes(binary)
-        # Apply closing operation
-        binary_no_holes_closed = morphology.binary_closing(binary_no_holes, morphology.disk(6))
-
-        im = Image.fromarray(binary_no_holes_closed)
+        im = Image.fromarray(binary)
         im.save(os.path.join(binary_path, 'bin_worms_'+str(i)+'.jpg'))
         i += 1
         # print(i)

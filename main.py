@@ -7,7 +7,7 @@ from find_head import *
 from get_angles import *
 from eigenworms import *
 
-video_number = 1  # number of the video
+video_number = 5  # number of the video
 path = r'C:\Users\rausc\code_project'  # your path
 # inside your path you need a folder called 'files' where the videos are saved
 # the videos need to be called 'video_i' where 'i' is the number of the video
