@@ -40,7 +40,7 @@ while os.path.exists(os.path.join(segmented_path, 'seg_worms_'+str(image_number)
 # calculating covariance matrix
 print("getting covariance matrix")
 cov_angles = np.cov(all_angles.T, bias=1)
-np.save(os.path.join(path, 'video_'+str(video_number)+r'_files\cov_angles'), cov_angles)
+np.save(os.path.join(path, 'video_'+str(video_number)+r'_files\cov_angles_'+str(video_number)+'.npy'), cov_angles)
 # plt.imshow(cov_angles)
 # plt.colorbar()
 # plt.show()
@@ -49,5 +49,5 @@ np.save(os.path.join(path, 'video_'+str(video_number)+r'_files\cov_angles'), cov
 
 # getting eigenworms
 print("getting eigenworms")
-eigenworms(cov_angles, 4)
+eigenworms(video_number, path, cov_angles, 4)
 plt.show()

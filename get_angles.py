@@ -39,6 +39,7 @@ def get_angles(video_number, image_number, path):
     # - we want an ordered list of all points of the skeleton so we can place evenly spaced points
     skel_list = np.array([[0, 0]])  # make empty list where we will save all coordinates of the skeleton in order
     coordinates = coord1
+    # startpoint is chosen randomly
     reference = coord2[0]
 
     # delete endpoint so we dont add it twice to the list of skel points
