@@ -4,9 +4,10 @@ from PIL import Image
 import scipy.ndimage
 from skimage import morphology
 import math
+import matplotlib.pyplot as plt
 
 
-def get_angles(video_number, image_number, path):
+def get_angles(video_number, image_number, path, head_pos):
 
     # open image
     pic_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
@@ -29,7 +30,7 @@ def get_angles(video_number, image_number, path):
                        [1, 1, 1],
                        [1, 1, 1]])
     ind2 = np.where((scipy.ndimage.convolve(skel, kernel, mode='constant', cval=0, origin=0) == 2) & (skel == 1))
-    coord2 = np.array(list(zip(ind2[0], ind2[1])))
+    end_points = np.array(list(zip(ind2[0], ind2[1])))
 
     # sort all skel points
     # - idea is to start at one end of the worm and then find the next skeleton point that is nearest to that end,
@@ -39,14 +40,20 @@ def get_angles(video_number, image_number, path):
     # - we want an ordered list of all points of the skeleton so we can place evenly spaced points
     skel_list = np.array([[0, 0]])  # make empty list where we will save all coordinates of the skeleton in order
     coordinates = coord1
-    # startpoint is chosen randomly
-    reference = coord2[0]
+
+    # get new head pos from previous head pos
+    end_distances = np.array(list(map(lambda x: np.sqrt((x[0]-head_pos[0])**2+(x[1]-head_pos[1])**2), end_points)))
+    ind = np.argsort(end_distances)
+    end_points = [end_points[i] for i in ind]
+    head_pos = end_points[0]
+    # print(head_pos)
 
     # delete endpoint so we dont add it twice to the list of skel points
-    distances_arr = np.array(list(map(lambda x: np.sqrt((x[0]-reference[0])**2+(x[1]-reference[1])**2), coordinates)))
+    distances_arr = np.array(list(map(lambda x: np.sqrt((x[0]-head_pos[0])**2+(x[1]-head_pos[1])**2), coordinates)))
     ind = np.argsort(distances_arr)
     coordinates = [coordinates[i] for i in ind]
     coordinates = coordinates[1:]
+    reference = head_pos
 
     while np.size(coordinates) != 0:  # we loop until all coordinates have been used
         # make an array of all distances to the reference point
@@ -88,7 +95,7 @@ def get_angles(video_number, image_number, path):
 
     angles_arr -= angles_arr.mean()
 
-    return angles_arr
+    return angles_arr, head_pos
 
 
 

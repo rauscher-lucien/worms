@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 from image_exc import *
 from thresholding import *
 from delete_cam_jumps import *
+from find_head import *
 from get_angles import *
 from eigenworms import *
 
-video_number = 2  # number of the video
+video_number = 1  # number of the video
 path = r'C:\Users\rausc\code_project'  # your path
 # inside your path you need a folder called 'files' where the videos are saved
 # the videos need to be called 'video_i' where 'i' is the number of the video
@@ -27,11 +28,15 @@ delete_cam_jumps(video_number, path)
 # calculate all angular distributions
 print("getting angles")
 image_number = 0  # number of the image
+# here a function that finds the head
+head_pos = find_head(video_number, image_number, path)
+# print(head_pos)
 segmented_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
-all_angles = get_angles(video_number, image_number, path)
+all_angles, head_pos = get_angles(video_number, image_number, path, head_pos)
+image_number += 1
 while os.path.exists(os.path.join(segmented_path, 'seg_worms_'+str(image_number)+'.jpg')):
     # print(image_number)
-    angles_arr = get_angles(video_number, image_number, path)
+    angles_arr, head_pos = get_angles(video_number, image_number, path, head_pos)
     # print(all_angles.shape, angles_arr.shape)
     # print(angles_arr)
     all_angles = np.concatenate((all_angles, angles_arr), axis=0)

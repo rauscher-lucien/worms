@@ -1,7 +1,15 @@
-import numpy as np
-import matplotlib.pyplot as plt
+a = 1
+b = 2
+y = int(input("number: "))
+if y == 1:
+    print("Hi")
+    c = a
+elif y == 2:
+    print("Bye")
+    c = b
+else:
+    print("error")
 
-a = np.array([[1, 1, 1]])
-b = np.array([[2, 3, 1]])
-a = np.concatenate((a, b), axis=0)
-print(a, a.shape)
+print(c-1)
+
+

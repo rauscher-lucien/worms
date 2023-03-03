@@ -25,7 +25,7 @@ def image_extraction(video_number, path):
         ret, frame = cap.read()
         # print(i)
 
-        if not ret or i == 4000:  # if the file does not return another frame (i.e. at the end of the video or if the video is disrupted)
+        if not ret or i == 2000:  # end of video or chosen point interrupts
             print('ret = False')
             break
         if i % 2 == 0:
