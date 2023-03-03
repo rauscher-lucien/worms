@@ -6,97 +6,58 @@ from skimage import morphology
 import math
 import matplotlib.pyplot as plt
 
+from find_head import *
+from binarize import *
+from make_skel import *
+from make_ordered_skel import *
 
-def get_angles(video_number, image_number, path, head_pos):
 
-    # open image
-    pic_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
-    img = Image.open(os.path.join(pic_path, 'seg_worms_'+str(image_number)+'.jpg')).convert("L")
-    image = np.array(img)
+def get_angles(video_number, path):
 
-    # thresholding, closing and skeleton
-    thresh = 90
-    binary = image <= thresh
-    binary = morphology.binary_closing(binary, morphology.disk(10))
-    binary = morphology.remove_small_objects(binary, min_size=100, connectivity=8, out=None)
-    skel = np.array(morphology.skeletonize(binary))
-    skel = skel.astype(int)
+    # identifying the head
+    print("finding the head")
+    image_number = 0  # number of the image
+    head_pos = find_head(video_number, path)
 
-    # get coordinates of skeleton
-    ind1 = np.where(skel != [0])
-    coord1 = np.array(list(zip(ind1[0], ind1[1])))
-
-    # find endpoints of skeleton through convolution
-    kernel = np.array([[1, 1, 1],
-                       [1, 1, 1],
-                       [1, 1, 1]])
-    ind2 = np.where((scipy.ndimage.convolve(skel, kernel, mode='constant', cval=0, origin=0) == 2) & (skel == 1))
-    end_points = np.array(list(zip(ind2[0], ind2[1])))
-
-    # sort all skel points
-    # - idea is to start at one end of the worm and then find the next skeleton point that is nearest to that end,
-    #   this point will be our new reference point, then we find the next point on the skeleton that is nearest
-    #   to our new reference point and make that the reference, while we do that we save all coordinates and by that
-    #   we get a sequence of coordinates that symbolizes the worm
-    # - we want an ordered list of all points of the skeleton so we can place evenly spaced points
-    skel_list = np.array([[0, 0]])  # make empty list where we will save all coordinates of the skeleton in order
-    coordinates = coord1
-
-    # get new head pos from previous head pos
-    end_distances = np.array(list(map(lambda x: np.sqrt((x[0]-head_pos[0])**2+(x[1]-head_pos[1])**2), end_points)))
-    ind = np.argsort(end_distances)
-    end_points = [end_points[i] for i in ind]
-    head_pos = end_points[0]
-    # print(head_pos)
-
-    # delete endpoint so we dont add it twice to the list of skel points
-    distances_arr = np.array(list(map(lambda x: np.sqrt((x[0]-head_pos[0])**2+(x[1]-head_pos[1])**2), coordinates)))
-    ind = np.argsort(distances_arr)
-    coordinates = [coordinates[i] for i in ind]
-    coordinates = coordinates[1:]
-    reference = head_pos
-
-    while np.size(coordinates) != 0:  # we loop until all coordinates have been used
-        # make an array of all distances to the reference point
-        distances_arr = np.array(list(map(lambda x: np.sqrt((x[0]-reference[0])**2+(x[1]-reference[1])**2), coordinates)))
-        ind = np.argsort(distances_arr)  # argsort the distances...
-        coordinates = [coordinates[i] for i in ind]  # ...and sort the coordinates by their distance to the ref
-        reference = coordinates[0]  # make new ref point the nearest point
-        skel_list = np.concatenate((skel_list, [reference]))  # add new point to the sorted list of coordinates
-        coordinates = coordinates[1:]  # remove the added coordinate so it doesnt get added again
-
-    skel_list = skel_list[1:]  # remove the zero at the beginning
+    segmented_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
     number_of_points = 30  # number of points we want on the skeleton
-    dots_list = skel_list[0::(len(skel_list)//number_of_points)]  # get evenly spaced points
-    dots_list = dots_list[:number_of_points]
+    all_angles = np.array([np.empty((number_of_points-1, ))])
+    # print(all_angles.shape)
 
-    # for i in dots_list:
-    #     print(i)
-    # skel_rgb = np.dstack([skel * 255, skel*255, skel*255])
-    # for i in dots_list:
-    #     skel_rgb[i[0], i[1], 1:2] = 0
-    # print(skel_rgb.shape)
-    #
-    # skel_rgb = skel_rgb.astype('uint8')
-    # im = Image.fromarray(skel_rgb, 'RGB')
-    # im.show()
-    # print(dots_list.shape)
+    while os.path.exists(os.path.join(segmented_path, 'seg_worms_' + str(image_number) + '.jpg')):
 
-    # straightforward angle calculation
-    angles_arr = np.empty((1, dots_list.shape[0]-1))  # where we save the angles
-    for i in range(dots_list.shape[0]-1):
-        vec0 = [1, 0]
-        vec1 = [dots_list[i+1, 0]-dots_list[i, 0], dots_list[i+1, 1]-dots_list[i, 1]]
-        # print(vec1)
-        angle = np.dot(vec1, vec0)/(np.linalg.norm(vec1)*np.linalg.norm(vec0))
-        if math.isnan(angle):
-            angle = 0
-        # print(angle)
-        angles_arr[0, i] = angle
+        img = Image.open(os.path.join(segmented_path, 'seg_worms_'+str(image_number)+'.jpg')).convert("L")
+        image = np.array(img)
 
-    angles_arr -= angles_arr.mean()
+        # make binary
+        binary = binarize(image)
 
-    return angles_arr, head_pos
+        # make skel
+        skel_coords, skel_ends = make_skel(binary)
 
+        # make ordered skeleton
+        # print(image_number)
+        ordered_skel, head_pos = make_ordered_skel(skel_coords, skel_ends, head_pos)
 
+        dots_list = ordered_skel[0::(len(ordered_skel)//number_of_points)]  # get evenly spaced points
+        dots_list = dots_list[:number_of_points]  # make sure you only keep the right number
 
+        # straightforward angle calculation
+        angles_arr = np.empty((1, dots_list.shape[0]-1))  # where we save the angles
+        for i in range(dots_list.shape[0]-1):
+            vec0 = [1, 0]
+            vec1 = [dots_list[i+1, 0]-dots_list[i, 0], dots_list[i+1, 1]-dots_list[i, 1]]
+            # print(vec1)
+            angle = np.dot(vec1, vec0)/(np.linalg.norm(vec1)*np.linalg.norm(vec0))
+            if math.isnan(angle):
+                angle = 0
+            # print(angle)
+            angles_arr[0, i] = angle
+
+        angles_arr -= angles_arr.mean()
+        # print(angles_arr.shape)
+        all_angles = np.concatenate((all_angles, angles_arr), axis=0)
+
+        image_number += 1
+
+    return all_angles

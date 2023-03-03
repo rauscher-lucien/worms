@@ -1,15 +1,10 @@
-a = 1
-b = 2
-y = int(input("number: "))
-if y == 1:
-    print("Hi")
-    c = a
-elif y == 2:
-    print("Bye")
-    c = b
-else:
-    print("error")
+import numpy as np
 
-print(c-1)
+a = np.array([0, 0])
+# print(a)
+c = np.array([[1, 1]])
+print(a.shape)
+b = np.concatenate((c, [a]))
+print(b)
 
 

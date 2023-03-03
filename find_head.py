@@ -1,9 +1,8 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-from skimage import morphology
 from PIL import Image
-import scipy.ndimage
+
+from binarize import *
+from make_skel import *
 
 # a prompt is gonna appear that is gonna show two coordinates with the numbers 0 and 1; the coordinates are the
 # coordinates of the two endpoints of the skeleton; you now need to manually open the first raw image of the set;
@@ -12,32 +11,19 @@ import scipy.ndimage
 # represents the head
 
 
-def find_head(video_number, image_number, path):
+def find_head(video_number, path):
 
     # open image
+    image_number = 0
     pic_path = os.path.join(path, 'video_' + str(video_number) + r'_files\segmented_pics')
     img = Image.open(os.path.join(pic_path, 'seg_worms_' + str(image_number) + '.jpg')).convert("L")
     image = np.array(img)
 
-    # thresholding, closing and skeleton
-    thresh = 90
-    binary = image <= thresh
-    binary = morphology.binary_closing(binary, morphology.disk(10))
-    binary = morphology.remove_small_objects(binary, min_size=100, connectivity=8, out=None)
-    skel = np.array(morphology.skeletonize(binary))
-    skel = skel.astype(int)
-    plt.imshow(skel)
-    plt.show()
+    # make binary
+    binary = binarize(image)
 
-    # get coordinates of skeleton
-    ind1 = np.where(skel != [0])
-    coord1 = np.array(list(zip(ind1[0], ind1[1])))
+    # make skel
+    _, skel_ends = make_skel(binary)
 
-    # find endpoints of skeleton through convolution
-    kernel = np.array([[1, 1, 1],
-                       [1, 1, 1],
-                       [1, 1, 1]])
-    ind2 = np.where((scipy.ndimage.convolve(skel, kernel, mode='constant', cval=0, origin=0) == 2) & (skel == 1))
-    coord2 = np.array(list(zip(ind2[0], ind2[1])))
-    y = int(input("0: "+str(coord2[0])+" or 1: "+str(coord2[1])))
-    return coord2[y]
+    y = int(input("0: "+str(skel_ends[0])+" or 1: "+str(skel_ends[1])+" -> "))
+    return skel_ends[y]

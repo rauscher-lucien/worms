@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from PIL import Image
-from scipy.ndimage import binary_fill_holes, binary_closing
 from skimage import morphology
 
 
@@ -24,7 +23,7 @@ def thresholding(video_number, path):
         # thresholding, closing and removing small objects
         thresh = 90
         binary = image <= thresh
-        binary = morphology.binary_closing(binary, morphology.disk(10))
+        binary = morphology.binary_closing(binary, morphology.disk(5))
         binary = morphology.remove_small_objects(binary, min_size=100, connectivity=8, out=None)
 
         im = Image.fromarray(binary)

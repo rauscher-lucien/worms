@@ -1,32 +1,38 @@
 import os
 import numpy as np
-import scipy.ndimage as ndimage
+import scipy.ndimage
 from PIL import Image
-from matplotlib import pyplot as plt
+from skimage import morphology
+
+from binarize import *
+from make_skel import *
 
 
-def delete_cam_jumps(video_number, path):
+def delete_bad_pics(video_number, path):
 
     if not os.path.exists(os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')):
         os.mkdir(os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics'))
 
-    pic_path = os.path.join(path, 'video_'+str(video_number)+r'_files\raw_pics')
-    binary_path = os.path.join(path, 'video_'+str(video_number)+r'_files\binary_pics')
+    raw_path = os.path.join(path, 'video_'+str(video_number)+r'_files\raw_pics')
     segmented_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
 
-    # prepare the loop
+    # delete jumps
     i = 1
     list_of_diffs = []
-    new_img = Image.open(os.path.join(binary_path, 'bin_worms_'+str(i)+'.jpg')).convert("L")
+    new_img = Image.open(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')).convert("L")
     new_image = np.array(new_img)
+    new_image = binarize(new_image)
     i += 1
-    while os.path.exists(os.path.join(binary_path, 'bin_worms_'+str(i)+'.jpg')):  # loop over all pics
+
+    while os.path.exists(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')):  # loop over all pics
 
         old_image = new_image
-        new_img = Image.open(os.path.join(binary_path, 'bin_worms_'+str(i)+'.jpg')).convert("L")
+        new_img = Image.open(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')).convert("L")
         new_image = np.array(new_img)
+        new_image = binarize(new_image)
         diff = np.sum(np.sum(new_image-old_image))  # calculate binary difference between images
         list_of_diffs.append(diff)
+
         i += 1
 
     d = np.abs(list_of_diffs - np.median(list_of_diffs))  # get how much each value is away from the median
@@ -43,13 +49,28 @@ def delete_cam_jumps(video_number, path):
         for j in range(i-2, i+2):
             frames_to_delete.append(j)
 
-    # print(frames_to_delete)
+    # delete all worms that dont have a good skel
+    while os.path.exists(os.path.join(raw_path, 'raw_worms_' + str(i) + '.jpg')):  # loop over all pics
+
+        img = Image.open(os.path.join(raw_path, 'raw_worms_' + str(i) + '.jpg')).convert("L")
+        image = np.array(img)
+
+        # make binary
+        binary = binarize(image)
+
+        # get info out of skel
+        _, skel_ends = make_skel(binary)
+
+        if len(skel_ends) != 2:
+            frames_to_delete.append(i)
+
+        i += 1
 
     i = 0
     j = 0
-    while os.path.exists(os.path.join(binary_path, 'bin_worms_'+str(i)+'.jpg')):  # loop over all pics
+    while os.path.exists(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')):  # loop over all pics
         if i not in frames_to_delete:
-            img = Image.open(os.path.join(pic_path, 'raw_worms_' + str(i) + '.jpg')).convert("L")
+            img = Image.open(os.path.join(raw_path, 'raw_worms_' + str(i) + '.jpg')).convert("L")
             img.save(os.path.join(segmented_path, 'seg_worms_' + str(j) + '.jpg'))
             j += 1
         i += 1
