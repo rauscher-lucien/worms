@@ -59,7 +59,7 @@ def delete_bad_pics(video_number, path):
         binary = binarize(image)
 
         # get info out of skel
-        _, skel_ends = make_skel(binary)
+        _, skel_ends, _ = make_skel(binary)
 
         if len(skel_ends) != 2:
             frames_to_delete.append(i)

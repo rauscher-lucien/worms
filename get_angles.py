@@ -19,6 +19,7 @@ def get_angles(video_number, path):
     image_number = 0  # number of the image
     head_pos = find_head(video_number, path)
 
+    print("getting angles")
     segmented_path = os.path.join(path, 'video_'+str(video_number)+r'_files\segmented_pics')
     number_of_points = 30  # number of points we want on the skeleton
     all_angles = np.array([np.empty((number_of_points-1, ))])
@@ -33,22 +34,23 @@ def get_angles(video_number, path):
         binary = binarize(image)
 
         # make skel
-        skel_coords, skel_ends = make_skel(binary)
+        skel_coords, skel_ends, _ = make_skel(binary)
 
         # make ordered skeleton
         # print(image_number)
         ordered_skel, head_pos = make_ordered_skel(skel_coords, skel_ends, head_pos)
-
+        # print(ordered_skel)
         dots_list = ordered_skel[0::(len(ordered_skel)//number_of_points)]  # get evenly spaced points
         dots_list = dots_list[:number_of_points]  # make sure you only keep the right number
-
+        # if image_number == 0:
+        #     print(dots_list)
         # straightforward angle calculation
         angles_arr = np.empty((1, dots_list.shape[0]-1))  # where we save the angles
         for i in range(dots_list.shape[0]-1):
             vec0 = [1, 0]
             vec1 = [dots_list[i+1, 0]-dots_list[i, 0], dots_list[i+1, 1]-dots_list[i, 1]]
             # print(vec1)
-            angle = np.dot(vec1, vec0)/(np.linalg.norm(vec1)*np.linalg.norm(vec0))
+            angle = np.arccos(np.dot(vec1, vec0)/(np.linalg.norm(vec1)*np.linalg.norm(vec0)))
             if math.isnan(angle):
                 angle = 0
             # print(angle)

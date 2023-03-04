@@ -23,7 +23,10 @@ def find_head(video_number, path):
     binary = binarize(image)
 
     # make skel
-    _, skel_ends = make_skel(binary)
+    _, skel_ends, skel = make_skel(binary)
 
-    y = int(input("0: "+str(skel_ends[0])+" or 1: "+str(skel_ends[1])+" -> "))
-    return skel_ends[y]
+    plt.imshow(skel)
+    plt.show()
+
+    y = int(input("0: "+str(skel_ends[0, :])+" or 1: "+str(skel_ends[1, :])+" -> "))
+    return skel_ends[y, :]
