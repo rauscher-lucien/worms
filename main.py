@@ -1,9 +1,7 @@
 import matplotlib.pyplot as plt
 
 from image_exc import *
-from thresholding import *
 from delete_bad_pics import *
-from find_head import *
 from get_angles import *
 from eigenworms import *
 
@@ -23,11 +21,10 @@ delete_bad_pics(video_number, path)
 
 # calculate all angular distributions
 all_angles = get_angles(video_number, path)
-# print(all_angles)
+
 # calculating covariance matrix
 print("getting covariance matrix")
 cov_angles = np.cov(all_angles.T, bias=1)
-# print(cov_angles)
 np.save(os.path.join(path, 'video_'+str(video_number)+r'_files\cov_angles_'+str(video_number)+'.npy'), cov_angles)
 
 # getting eigenworms
