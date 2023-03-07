@@ -34,16 +34,24 @@ def get_angles(video_number, path):
         binary = binarize(image)
 
         # make skel
-        skel_coords, skel_ends, _ = make_skel(binary)
+        skel_coords, skel_ends, skel = make_skel(binary)
 
         # make ordered skeleton
-        # print(image_number)
         ordered_skel, head_pos = make_ordered_skel(skel_coords, skel_ends, head_pos)
-        # print(ordered_skel)
+
         dots_list = ordered_skel[0::(len(ordered_skel)//number_of_points)]  # get evenly spaced points
         dots_list = dots_list[:number_of_points]  # make sure you only keep the right number
+
         # if image_number == 0:
-        #     print(dots_list)
+        #     print(skel)
+        #     skel_rgb = np.stack((skel*100, skel*100, skel*100), axis=2).astype(np.uint8)
+        #     print(skel_rgb.shape)
+        #     for index in dots_list:
+        #         print(index[0])
+        #         skel_rgb[index[0], index[1], 0] = 255
+        #     img = Image.fromarray(skel_rgb, 'RGB')
+        #     img.show()
+
         # straightforward angle calculation
         angles_arr = np.empty((1, dots_list.shape[0]-1))  # where we save the angles
         for i in range(dots_list.shape[0]-1):

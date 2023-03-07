@@ -25,7 +25,6 @@ def delete_bad_pics(video_number, path):
     i += 1
 
     while os.path.exists(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')):  # loop over all pics
-
         old_image = new_image
         new_img = Image.open(os.path.join(raw_path, 'raw_worms_'+str(i)+'.jpg')).convert("L")
         new_image = np.array(new_img)
@@ -50,8 +49,8 @@ def delete_bad_pics(video_number, path):
             frames_to_delete.append(j)
 
     # delete all worms that dont have a good skel
+    i = 0
     while os.path.exists(os.path.join(raw_path, 'raw_worms_' + str(i) + '.jpg')):  # loop over all pics
-
         img = Image.open(os.path.join(raw_path, 'raw_worms_' + str(i) + '.jpg')).convert("L")
         image = np.array(img)
 

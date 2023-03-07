@@ -44,21 +44,24 @@ plt.show()
 num_eigenworms = 4
 fig, axs = plt.subplots(nrows=num_eigenworms, ncols=1, figsize=(5, 10))
 eigenworms_sum = np.zeros((4, 29))
+videos_to_analyze = [1, 2]
+flip_indices = [1]
 index = 1
+counter = 0
 while os.path.exists(os.path.join(path, r'all_eigenworms\eigen_worms_'+str(index)+'.npy')):  # loop over all pics
-
-    eigenworms = np.load(os.path.join(path, r'all_eigenworms\eigen_worms_'+str(index)+'.npy'))
-    eigenworms_sum += eigenworms
-    # print(eigenworms_sum[3, :])
-    for i in range(num_eigenworms):
-        axs[i].plot(eigenworms[i, :], color='black', linewidth=1, linestyle='dashed')
-        # axs[i].set_xlim(0, numPixels)
-        # axs[i].set_ylim(0, eigenWorms)
-
+    if index in videos_to_analyze:
+        eigenworms = np.load(os.path.join(path, r'all_eigenworms\eigen_worms_'+str(index)+'.npy'))
+        if index in flip_indices:
+            eigenworms = -eigenworms
+        eigenworms_sum += eigenworms
+        # print(eigenworms_sum[3, :])
+        for i in range(num_eigenworms):
+            axs[i].plot(eigenworms[i, :], color='black', linewidth=1, linestyle='dashed')
+        counter += 1
     index += 1
 
 for i in range(num_eigenworms):
-    axs[i].plot(eigenworms_sum[i, :]/(index-1), color='red', linewidth=1)
+    axs[i].plot(eigenworms_sum[i, :]/(counter), color='red', linewidth=1)
     # axs[i].set_xlim(0, numPixels)
     # axs[i].set_ylim(0, eigenWorms)
 

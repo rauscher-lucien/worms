@@ -36,5 +36,5 @@ def make_ordered_skel(skel_coords, skel_ends, head_pos):
         skel_coords = skel_coords[1:]  # remove the added coordinate, so it doesn't get added again
 
     ordered_skel = ordered_skel[2:]  # remove the head that was added twice
-    # print(ordered_skel)
+
     return ordered_skel, head_pos
